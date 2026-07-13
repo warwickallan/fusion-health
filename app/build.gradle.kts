@@ -11,8 +11,8 @@ android {
         applicationId = "com.fusionhealth.diagnostic"
         minSdk = 26
         targetSdk = 34
-        versionCode = 2
-        versionName = "0.2.0-wp1-build-a"
+        versionCode = 3
+        versionName = "0.3.0-wp1-build-b"
     }
 
     // Release signing is optional at this stage: if ANDROID_KEYSTORE_PATH points to a
