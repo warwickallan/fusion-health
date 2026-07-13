@@ -124,15 +124,18 @@ class MainActivity : AppCompatActivity() {
             val granted = healthConnectClient.permissionController.getGrantedPermissions()
 
             val results = listOf(
-                readType<StepsRecord>("Steps/Activity", granted),
+                // "Steps records", not "Steps/Activity": this reads StepsRecord objects only.
+                // Exercise sessions are a different record type and are not read by PR2.
+                readType<StepsRecord>("Steps records", granted),
                 readType<SleepSessionRecord>("Sleep", granted),
                 readType<HeartRateRecord>("Heart rate", granted),
                 readType<NutritionRecord>("Nutrition", granted),
                 readType<WeightRecord>("Weight", granted),
                 readType<BodyFatRecord>("Body fat/composition", granted),
             )
+            val stepsTotalToday = readStepsTotalToday(granted)
 
-            val diagnosticText = buildDiagnosticText(results)
+            val diagnosticText = buildDiagnosticText(results, stepsTotalToday)
             lastDiagnosticText = diagnosticText
             showStatus(diagnosticText)
             findViewById<Button>(R.id.copyExportButton).isEnabled = true
@@ -196,6 +199,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // The actual step total for the current local day, via Health Connect's aggregate API —
+    // never by summing raw StepsRecord objects, which could double-count overlapping origins
+    // (Samsung Health + Health Connect's own phone origin). See HealthConnectAggregates.kt.
+    private suspend fun readStepsTotalToday(granted: Set<String>): StepsTotalToday {
+        if (HealthPermission.getReadPermission(StepsRecord::class) !in granted) {
+            return StepsTotalToday(permissionDenied = true)
+        }
+        return try {
+            val response = healthConnectClient.aggregate(
+                buildStepsTotalAggregateRequest(localDayStart(), Instant.now())
+            )
+            StepsTotalToday(
+                total = response[StepsRecord.COUNT_TOTAL],
+                origins = response.dataOrigins.map { it.packageName }.toSet(),
+            )
+        } catch (e: Exception) {
+            StepsTotalToday(error = e.message ?: "aggregate error")
+        }
+    }
+
     // Records don't share a common "time" property across types (sessions have start/end,
     // instantaneous records have `time`) — normalise to a single Instant per record for
     // earliest/latest reporting.
@@ -209,7 +232,7 @@ class MainActivity : AppCompatActivity() {
         else -> Instant.now()
     }
 
-    private fun buildDiagnosticText(results: List<TypeResult>): String {
+    private fun buildDiagnosticText(results: List<TypeResult>, stepsTotalToday: StepsTotalToday): String {
         val dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZoneId.systemDefault())
         val sb = StringBuilder()
         sb.appendLine("Fusion Health — Health Connect Diagnostic (WP1/PR2)")
@@ -220,7 +243,8 @@ class MainActivity : AppCompatActivity() {
             sb.appendLine("- ${r.label}: ${r.state}")
             when (r.state) {
                 TypeState.POPULATED -> {
-                    sb.appendLine("    count=${r.count}")
+                    // record_count counts record OBJECTS, never underlying units (e.g. steps).
+                    sb.appendLine("    record_count=${r.count}")
                     sb.appendLine("    pages_read=${r.pagesRead}")
                     sb.appendLine("    earliest=${r.earliest?.let { dateFmt.format(it) }}")
                     sb.appendLine("    latest=${r.latest?.let { dateFmt.format(it) }}")
@@ -229,12 +253,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 TypeState.READ_ERROR -> {
                     sb.appendLine("    error=${r.errorMessage ?: "unknown"}")
-                    sb.appendLine("    pages_read=${r.pagesRead}, partial_count=${r.count}")
+                    sb.appendLine("    pages_read=${r.pagesRead}, partial_record_count=${r.count}")
                     sb.appendLine("    truncated=${r.truncated}${r.truncationReason?.let { " (reason=$it)" } ?: ""}")
                 }
                 TypeState.EMPTY, TypeState.PERMISSION_DENIED -> Unit
             }
         }
+
+        sb.appendLine()
+        val stepsRecordCount = results.firstOrNull { it.label == "Steps records" }?.count ?: 0
+        sb.append(formatStepsTotalSection(stepsRecordCount, stepsTotalToday))
 
         sb.appendLine()
         sb.appendLine("== Source app classification ==")
@@ -281,6 +309,11 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
+        sb.appendLine()
+        sb.appendLine(
+            "Exercise sessions are not read by this PR2 build: no READ_EXERCISE permission is " +
+                "requested and ExerciseSessionRecord is not queried."
+        )
         sb.appendLine()
         sb.appendLine("No health data is stored, uploaded, or retained beyond this screen.")
         return sb.toString()
