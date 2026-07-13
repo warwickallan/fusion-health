@@ -18,7 +18,8 @@ class MainActivity : AppCompatActivity() {
         val status = buildString {
             appendLine("Fusion Health — Diagnostic Scaffold")
             appendLine()
-            appendLine("Version: ${packageInfo.versionName} (${packageInfo.longVersionCode})")
+            @Suppress("DEPRECATION") // versionCode (not longVersionCode) is the correct call at minSdk 26 — getLongVersionCode requires API 28+
+            appendLine("Version: ${packageInfo.versionName} (${packageInfo.versionCode})")
             appendLine("Package: $packageName")
             appendLine()
             appendLine("WP1 / PR1 — cloud build pipeline check.")
