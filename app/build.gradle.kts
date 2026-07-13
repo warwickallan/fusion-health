@@ -11,8 +11,8 @@ android {
         applicationId = "com.fusionhealth.diagnostic"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0-wp1"
+        versionCode = 2
+        versionName = "0.2.0-wp1-build-a"
     }
 
     // Release signing is optional at this stage: if ANDROID_KEYSTORE_PATH points to a
@@ -22,6 +22,11 @@ android {
     // ever read from or written to the repository itself.
     val releaseKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
     val hasReleaseKeystore = !releaseKeystorePath.isNullOrBlank() && file(releaseKeystorePath).exists()
+
+    // Logs only which signing config name is selected (never any secret/alias/password
+    // value) so CI evidence can confirm release signing was actually used, not just that
+    // the keystore secret exists.
+    println("Fusion Health: release build will sign with signingConfig = '${if (hasReleaseKeystore) "release" else "debug"}'")
 
     signingConfigs {
         if (hasReleaseKeystore) {
