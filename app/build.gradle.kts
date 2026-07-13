@@ -11,8 +11,8 @@ android {
         applicationId = "com.fusionhealth.diagnostic"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "0.3.0-wp1-build-b"
+        versionCode = 4
+        versionName = "0.4.0-wp1-pr2-health-connect"
     }
 
     // Release signing is optional at this stage: if ANDROID_KEYSTORE_PATH points to a
@@ -63,4 +63,7 @@ android {
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha07")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }
