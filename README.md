@@ -9,7 +9,7 @@ No Android Studio, Java, Gradle, or Samsung tooling is installed on Warwick's wo
 ```text
 Larry writes and reviews source code
             ↓
-Private GitHub repository (this repo)
+GitHub repository (this repo)
             ↓
 GitHub Actions cloud build
             ↓
@@ -22,9 +22,13 @@ Warwick installs, grants permissions, runs test
 Diagnostic report returned to Larry
 ```
 
+**Repository visibility — currently public.** This is a deliberate, temporary choice made for build purposes; the repo will be flipped to private before production use. Anything published from this repo (releases, prereleases, artifacts) is public while the repo is public, regardless of "prerelease" labelling — treat nothing here as confidential until visibility is actually changed.
+
 ## Status
 
 **WP0 (capability preflight) — passed for PR1 scope.** Java/Gradle/GitHub Actions build chain confirmed viable. Samsung Health Data SDK acquisition and licence/redistribution terms remain unresolved (developer.samsung.com is blocked to automated fetch in the research environment) — this blocks PR3 only, not PR1 or PR2.
+
+**PR1 — cloud build pipeline proven end-to-end**, including a real device install (see `docs/plan.md` status notes). Release signing currently falls back to Gradle's debug signing pending the release keystore being added as GitHub secrets.
 
 Full work-package breakdown and PR sequence: [`docs/plan.md`](docs/plan.md).
 

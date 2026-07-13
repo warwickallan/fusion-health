@@ -9,7 +9,7 @@ Fusion Health is developed without requiring Warwick to install Android Studio, 
 ```text
 Larry writes and reviews source code
             ↓
-Private GitHub repository
+GitHub repository
             ↓
 GitHub Actions cloud build
             ↓
@@ -51,7 +51,7 @@ The work proceeds through small evidence-led work packages. Only the currently a
 - Samsung Health Data SDK download/docs: `developer.samsung.com` blocked at the research environment's egress proxy — unresolved, only blocks PR3.
 - SDK licence/redistribution terms: unverified, same blocker.
 - Signing key: one debug/test keystore generated once, stored as an encrypted GitHub Actions secret, reused across builds so updates install in place. Losing this keystore breaks in-place updates for all future builds — needs durable backup once generated.
-- Delivery mechanism: GitHub private prerelease with the raw `.apk` as a release asset (preferred over a bare Actions artifact — avoids zip-extraction friction on Android).
+- Delivery mechanism: GitHub prerelease with the raw `.apk` as a release asset (preferred over a bare Actions artifact — avoids zip-extraction friction on Android). **Note:** this is only actually private while the repository itself is private — the repo is currently public for build purposes, so releases are public too regardless of "prerelease" labelling.
 - Diagnostic return path: on-screen copy/export, no backend, no laptop connection needed.
 
 Full preflight and correction-memo trail: `Deliverables/2026-07-13-health-data-pipeline-source-feasibility.md` in `warwickallan/fusion247pka` (held uncommitted there).
@@ -74,7 +74,9 @@ Read-only, local-only, no Fusion backend, no network upload, no database, no bac
 
 Branch: `idea-005/wp1/android-cloud-build`
 
-Scope: private repo (this one), minimal Kotlin Android app, Gradle wrapper + reproducible build config, GitHub Actions workflow, signed APK compiled on a GitHub-hosted runner, published as a private downloadable build artefact/prerelease, simple version/diagnostic-status screen. No health permissions or health-data access yet.
+Scope: this repo (currently public for build purposes, to be flipped to private before production), minimal Kotlin Android app, Gradle wrapper + reproducible build config, GitHub Actions workflow, signed APK compiled on a GitHub-hosted runner, published as a downloadable build artefact/prerelease, simple version/diagnostic-status screen. No health permissions or health-data access yet.
+
+**Status (updated after PR1 device test):** cloud build pipeline proven end-to-end — Actions run succeeded (SDK setup, Gradle provisioning, lint, unit tests, signed APK build, artifact upload, prerelease publish), and Warwick confirmed the resulting APK installs and launches cleanly on his Galaxy phone with no health permissions requested. Currently debug-signed only; release keystore pending addition as GitHub secrets (see review-corrections note below) before in-place update across builds can be proven.
 
 Acceptance: Actions completes successfully; automated tests/lint pass; signed APK produced; Warwick downloads and installs directly to Galaxy phone; no `.exe`/dev tool installed on the work machine; a later build updates the installed app using the same signing identity.
 

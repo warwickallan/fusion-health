@@ -9,6 +9,11 @@ on:
       - main
   workflow_dispatch: {}
 
+# Minimal explicit permissions: only contents write is needed (release publish +
+# checkout read). Do not inherit the default token's broader permission set.
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -40,6 +45,12 @@ jobs:
         with:
           gradle-version: "8.7"
 
+      - name: Lint
+        run: gradle lintRelease --stacktrace
+
+      - name: Unit tests
+        run: gradle testReleaseUnitTest --stacktrace
+
       # Only writes a keystore file if the secret is actually set. If it isn't,
       # the build below falls back to debug signing — see app/build.gradle.kts.
       - name: Decode release keystore (if configured)
@@ -54,6 +65,13 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: gradle assembleRelease --stacktrace
 
+      # The decoded keystore must not outlive the step that needs it — delete it
+      # immediately so no later step (including third-party actions below) can
+      # read it off disk. Runs even if the build step failed.
+      - name: Remove decoded keystore
+        if: always()
+        run: rm -f "${{ github.workspace }}/release.keystore"
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -61,9 +79,14 @@ jobs:
           path: app/build/outputs/apk/release/app-release.apk
           retention-days: 30
 
-      # Private prerelease with the raw APK attached — direct-download install path,
-      # no zip extraction needed on the phone. Only runs on pushes to the WP1 branch.
-      - name: Publish private prerelease
+      # Attaches the raw APK as a release asset — direct-download install path,
+      # no zip extraction needed on the phone. Only runs on pushes to the WP1
+      # branch. NOTE: this repo is currently public (a deliberate, temporary
+      # choice for build purposes — see docs/plan.md), so this release is
+      # publicly visible too, not private, regardless of "prerelease" status.
+      # It will only be genuinely private once the repository itself is
+      # flipped to private ahead of production use.
+      - name: Publish prerelease
         if: ${{ github.event_name == 'push' }}
         uses: softprops/action-gh-release@v2
         with:
