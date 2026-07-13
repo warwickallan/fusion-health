@@ -41,21 +41,33 @@ class MainActivity : AppCompatActivity() {
         val label: String,
         val state: TypeState,
         val count: Int = 0,
+        val pagesRead: Int = 0,
         val earliest: Instant? = null,
         val latest: Instant? = null,
         val sourcePackages: Set<String> = emptySet(),
+        val truncated: Boolean = false,
+        val truncationReason: String? = null,
         val errorMessage: String? = null,
     )
 
     private enum class AppState { POPULATED, EMPTY, PERMISSION_DENIED, READ_ERROR }
 
-    // Best-effort package names for the three source apps this diagnostic must classify.
-    // Not independently verified against a real device in this build's development
-    // environment — flagged as a residual risk pending Warwick's device evidence.
+    // Package names for the three source apps this diagnostic classifies. Verified against
+    // Warwick's real device (PR2 second device test, 2026-07-13): Health Connect returned
+    // records with these exact dataOrigin.packageName values for Samsung Health, MyFitnessPal
+    // and Withings respectively.
     private object SourceApps {
         const val SAMSUNG_HEALTH = "com.sec.android.app.shealth"
         const val MYFITNESSPAL = "com.myfitnesspal.android"
         const val WITHINGS = "com.withings.wiscale2"
+    }
+
+    private companion object {
+        // Defensive upper bound on pages read per record type. Health Connect's own
+        // pagination should terminate via a null pageToken long before this; this guard exists
+        // only to prevent an unbounded loop if the API ever returns a token that never resolves
+        // to null, or repeats a token it has already returned.
+        const val MAX_PAGES_PER_TYPE = 200
     }
 
     private val permissions: Set<String> by lazy {
@@ -138,30 +150,50 @@ class MainActivity : AppCompatActivity() {
             return TypeResult(label, TypeState.PERMISSION_DENIED)
         }
 
-        return try {
-            val request = ReadRecordsRequest(
-                recordType = T::class,
-                timeRangeFilter = TimeRangeFilter.between(Instant.EPOCH, Instant.now()),
-            )
-            val records = healthConnectClient.readRecords(request).records
-            if (records.isEmpty()) {
-                TypeResult(label, TypeState.EMPTY)
-            } else {
-                val times = records.map { recordTime(it) }
-                val sources = records.map { it.metadata.dataOrigin.packageName }.toSet()
-                TypeResult(
-                    label = label,
-                    state = TypeState.POPULATED,
-                    count = records.size,
-                    earliest = times.min(),
-                    latest = times.max(),
-                    sourcePackages = sources,
+        val pagination = try {
+            accumulatePages<T>(MAX_PAGES_PER_TYPE) { pageToken ->
+                val request = ReadRecordsRequest(
+                    recordType = T::class,
+                    timeRangeFilter = TimeRangeFilter.between(Instant.EPOCH, Instant.now()),
+                    pageToken = pageToken,
                 )
+                val response = healthConnectClient.readRecords(request)
+                PageFetchResult(response.records, response.pageToken)
             }
         } catch (e: SecurityException) {
-            TypeResult(label, TypeState.PERMISSION_DENIED, errorMessage = e.message)
+            return TypeResult(label, TypeState.PERMISSION_DENIED, errorMessage = e.message)
         } catch (e: Exception) {
-            TypeResult(label, TypeState.READ_ERROR, errorMessage = e.message)
+            return TypeResult(
+                label = label,
+                state = TypeState.READ_ERROR,
+                truncated = true,
+                truncationReason = e.message ?: "read error",
+                errorMessage = e.message,
+            )
+        }
+
+        return if (pagination.records.isEmpty()) {
+            TypeResult(
+                label = label,
+                state = TypeState.EMPTY,
+                pagesRead = pagination.pagesRead,
+                truncated = pagination.truncated,
+                truncationReason = pagination.truncationReason,
+            )
+        } else {
+            val times = pagination.records.map { recordTime(it) }
+            val sources = pagination.records.map { it.metadata.dataOrigin.packageName }.toSet()
+            TypeResult(
+                label = label,
+                state = TypeState.POPULATED,
+                count = pagination.records.size,
+                pagesRead = pagination.pagesRead,
+                earliest = times.min(),
+                latest = times.max(),
+                sourcePackages = sources,
+                truncated = pagination.truncated,
+                truncationReason = pagination.truncationReason,
+            )
         }
     }
 
@@ -190,11 +222,17 @@ class MainActivity : AppCompatActivity() {
             when (r.state) {
                 TypeState.POPULATED -> {
                     sb.appendLine("    count=${r.count}")
+                    sb.appendLine("    pages_read=${r.pagesRead}")
                     sb.appendLine("    earliest=${r.earliest?.let { dateFmt.format(it) }}")
                     sb.appendLine("    latest=${r.latest?.let { dateFmt.format(it) }}")
                     sb.appendLine("    source_apps=${r.sourcePackages.joinToString(", ")}")
+                    sb.appendLine("    truncated=${r.truncated}${r.truncationReason?.let { " (reason=$it)" } ?: ""}")
                 }
-                TypeState.READ_ERROR -> sb.appendLine("    error=${r.errorMessage ?: "unknown"}")
+                TypeState.READ_ERROR -> {
+                    sb.appendLine("    error=${r.errorMessage ?: "unknown"}")
+                    sb.appendLine("    pages_read=${r.pagesRead}, partial_count=${r.count}")
+                    sb.appendLine("    truncated=${r.truncated}${r.truncationReason?.let { " (reason=$it)" } ?: ""}")
+                }
                 TypeState.EMPTY, TypeState.PERMISSION_DENIED -> Unit
             }
         }
@@ -222,10 +260,28 @@ class MainActivity : AppCompatActivity() {
 
         sb.appendLine()
         sb.appendLine(
-            "Package-name matches above are best-effort and unverified against a real device " +
-                "in this build's development environment — confirm against Warwick's actual " +
-                "Health Connect source-app list."
+            "Package-name matches above are verified against Warwick's real-device Health " +
+                "Connect source-app list (PR2 second device test, 2026-07-13)."
         )
+
+        val secondaryOrigins = allSourcePackages.filter {
+            it !in setOf(SourceApps.SAMSUNG_HEALTH, SourceApps.MYFITNESSPAL, SourceApps.WITHINGS)
+        }
+        if (secondaryOrigins.isNotEmpty()) {
+            sb.appendLine()
+            sb.appendLine("== Additional observed origins (not classified above) ==")
+            secondaryOrigins.forEach { pkg ->
+                sb.appendLine("- $pkg")
+            }
+            sb.appendLine(
+                "Observed as a data-origin package alongside the three classified source apps " +
+                    "(e.g. com.android.healthconnect.* — Health Connect's own on-device " +
+                    "aggregation/phone origin). Reported here for visibility only; source-authority " +
+                    "analysis (which origin is canonical for a given record) is deferred to a later " +
+                    "work package, not decided in PR2."
+            )
+        }
+
         sb.appendLine()
         sb.appendLine("No health data is stored, uploaded, or retained beyond this screen.")
         return sb.toString()
