@@ -12,6 +12,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # GitHub Actions doesn't allow the `secrets` context directly inside a
+      # step's `if:` — compute the flag here instead, in an env context, which
+      # `if:` conditions are allowed to read.
+      HAS_RELEASE_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,7 +43,7 @@ jobs:
       # Only writes a keystore file if the secret is actually set. If it isn't,
       # the build below falls back to debug signing — see app/build.gradle.kts.
       - name: Decode release keystore (if configured)
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        if: ${{ env.HAS_RELEASE_KEYSTORE == 'true' }}
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "${{ github.workspace }}/release.keystore"
 
       - name: Build signed APK
