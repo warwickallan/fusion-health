@@ -28,7 +28,7 @@ Diagnostic report returned to Larry
 
 **WP0 (capability preflight) — passed for PR1 scope.** Java/Gradle/GitHub Actions build chain confirmed viable. Samsung Health Data SDK acquisition and licence/redistribution terms remain unresolved (developer.samsung.com is blocked to automated fetch in the research environment) — this blocks PR3 only, not PR1 or PR2.
 
-**PR1 — cloud build pipeline proven end-to-end**, including a real device install (see `docs/plan.md` status notes). Release signing currently falls back to Gradle's debug signing pending the release keystore being added as GitHub secrets.
+**PR1 — complete.** Cloud build pipeline proven end-to-end, permanent release signing configured via GitHub secrets, and the in-place update path proven on Warwick's Galaxy device: Build A installed fresh, Build B installed directly over it without uninstalling, and the update succeeded (see `docs/plan.md` status notes for full evidence).
 
 Full work-package breakdown and PR sequence: [`docs/plan.md`](docs/plan.md).
 
