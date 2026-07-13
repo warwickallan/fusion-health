@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "idea-005/wp1/**"
+      - "build-005/**"
   pull_request:
     branches:
       - main
@@ -43,7 +44,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.7"
+          gradle-version: "8.13"
 
       - name: Lint
         run: gradle lintRelease --stacktrace
