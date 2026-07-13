@@ -32,12 +32,12 @@ Diagnostic report returned to Larry
 
 Full work-package breakdown and PR sequence: [`docs/plan.md`](docs/plan.md).
 
-Tracking: ClickUp — Fusion 247 Foundry space, IDEA-005.
+Tracking: ClickUp — **BUILD-005**, Fusion 247 MyPKA space (production delivery). This idea converged and was approved for production in Fusion 247 Foundry as `IDEA-005`; Foundry now retains only a concise handoff record for it, not active work-package/PR tracking.
 
 ## Current authorisation boundary
 
-Authorised so far: WP0 preflight, repository/tracking scaffolding (this commit).
-Not yet authorised: PR1 Android code/GitHub Actions workflow, PR2/PR3 health-data access, any backend/ingestion/dashboard work.
+Authorised and complete: WP0 preflight, repository/tracking scaffolding, PR1 (Android scaffold, cloud APK pipeline, permanent release signing, proven in-place update).
+Not yet authorised: PR2/PR3 health-data access, any backend/ingestion/dashboard work.
 
 ## Related
 

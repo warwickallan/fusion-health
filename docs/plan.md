@@ -26,7 +26,9 @@ Warwick's work laptop is not part of the Android development or testing environm
 
 ---
 
-## IDEA-005 — Personal Health Data Integration and Intelligence
+## BUILD-005 — Personal Health Data Integration and Intelligence
+
+**Governance note:** this idea converged in Foundry as `IDEA-005` and entered production as `BUILD-005`, tracked in ClickUp under **Fusion 247 MyPKA** (production delivery), not Fusion 247 Foundry (exploration/convergence). Foundry retains only a concise handoff record for this idea. PR1's branch (`idea-005/wp1/android-cloud-build`) is kept as-is — a historical exception, since the PR was already open and fully tested before this naming convention took effect. Future branches use `build-005/wpX/...`.
 
 ### Desired outcome
 
@@ -86,7 +88,7 @@ Acceptance — all met: Actions completes successfully; automated tests/lint pas
 
 ### PR2 — Health Connect baseline
 
-Branch: `idea-005/wp1/health-connect-baseline`
+Branch: `build-005/wp1/health-connect-baseline`
 
 Scope: detect Health Connect availability; request only required read permissions; read a small sample of sleep, steps, heart rate, nutrition; identify source-application metadata where available; display record type/timestamp/value/unit/source/significant fields; copy/export diagnostic output; no retention beyond the diagnostic session.
 
@@ -98,7 +100,7 @@ Acceptance: a genuine Health Connect record appears; record provenance visible w
 
 ### PR3 — Samsung Health Data SDK comparison
 
-Branch: `idea-005/wp1/samsung-health-comparison`
+Branch: `build-005/wp1/samsung-health-comparison`
 
 Scope: integrate the Samsung Health Data SDK; connect to Samsung Health in developer mode; request read-only permission; compare overlapping data through both routes (sleep, steps/activity, heart rate); inspect Samsung-specific availability (Energy Score, activity summary, sleep-apnoea records, irregular heart-rhythm notifications); classify each as populated / supported-but-empty / unsupported / unavailable-on-device / permission-denied; extend the export report with a route-by-route comparison.
 
