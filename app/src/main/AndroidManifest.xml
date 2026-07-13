@@ -28,13 +28,35 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Health Connect's permission-rationale requirement: point it at the same
-                 screen that requests the permissions, since this diagnostic has no
-                 separate privacy-policy screen. -->
+        </activity>
+
+        <!-- Dedicated permissions-rationale / privacy activity. Health Connect requires an app
+             to declare a rationale surface to be discoverable in its permissions UI; PR2's
+             original build only had the pre-Android-14 intent-filter on MainActivity, which
+             left the app invisible to Health Connect on the Android 14+ device Warwick tested
+             on (no permission screen shown, app absent from Health Connect's app list, all
+             reads PERMISSION_DENIED). This activity plus the alias below fixes that. -->
+        <activity
+            android:name=".PermissionsRationaleActivity"
+            android:exported="true">
+            <!-- Pre-Android-14 mechanism (retained). -->
             <intent-filter>
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
         </activity>
+
+        <!-- Android 14+ mechanism: Health Connect resolves this exact alias/intent-filter
+             combination to find the rationale activity. -->
+        <activity-alias
+            android:name=".PermissionsRationaleActivityAlias"
+            android:exported="true"
+            android:targetActivity=".PermissionsRationaleActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
     </application>
 
 </manifest>
