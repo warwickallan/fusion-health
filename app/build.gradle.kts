@@ -11,8 +11,8 @@ android {
         applicationId = "com.fusionhealth.diagnostic"
         minSdk = 26
         targetSdk = 34
-        versionCode = 6
-        versionName = "0.6.0-wp1-pr2-pagination-fix"
+        versionCode = 7
+        versionName = "0.7.0-wp1-pr2-pagination-token-fix"
     }
 
     // Release signing is optional at this stage: if ANDROID_KEYSTORE_PATH points to a

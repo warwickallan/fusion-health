@@ -19,8 +19,6 @@ import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
-import androidx.health.connect.client.request.ReadRecordsRequest
-import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -152,16 +150,17 @@ class MainActivity : AppCompatActivity() {
 
         val pagination = try {
             accumulatePages<T>(MAX_PAGES_PER_TYPE) { pageToken ->
-                val request = ReadRecordsRequest(
-                    recordType = T::class,
-                    timeRangeFilter = TimeRangeFilter.between(Instant.EPOCH, Instant.now()),
-                    pageToken = pageToken,
-                )
+                val request = buildReadRecordsRequest(T::class, pageToken)
                 val response = healthConnectClient.readRecords(request)
                 PageFetchResult(response.records, response.pageToken)
             }
         } catch (e: SecurityException) {
             return TypeResult(label, TypeState.PERMISSION_DENIED, errorMessage = e.message)
+        } catch (e: PaginationFailure) {
+            // At least one page was already read successfully before a later page failed --
+            // keep those records/pages rather than discarding them and reporting zero.
+            @Suppress("UNCHECKED_CAST")
+            (e.partialResult as PaginationResult<T>)
         } catch (e: Exception) {
             return TypeResult(
                 label = label,
