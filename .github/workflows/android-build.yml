@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "idea-005/wp1/**"
+      - "build-005/**"
   pull_request:
     branches:
       - main
