@@ -1,0 +1,98 @@
+name: Android build
+
+on:
+  push:
+    branches:
+      - "idea-005/wp1/**"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+# Minimal explicit permissions: only contents write is needed (release publish +
+# checkout read). Do not inherit the default token's broader permission set.
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # GitHub Actions doesn't allow the `secrets` context directly inside a
+      # step's `if:` — compute the flag here instead, in an env context, which
+      # `if:` conditions are allowed to read.
+      HAS_RELEASE_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # This repo deliberately has no committed Gradle wrapper: generating one
+      # requires downloading a Gradle distribution zip, which the development
+      # sandbox's network policy blocks. GitHub-hosted runners have normal
+      # internet access, so Gradle is provisioned here instead, via the
+      # official setup-gradle action — no wrapper jar needed.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+
+      - name: Lint
+        run: gradle lintRelease --stacktrace
+
+      - name: Unit tests
+        run: gradle testReleaseUnitTest --stacktrace
+
+      # Only writes a keystore file if the secret is actually set. If it isn't,
+      # the build below falls back to debug signing — see app/build.gradle.kts.
+      - name: Decode release keystore (if configured)
+        if: ${{ env.HAS_RELEASE_KEYSTORE == 'true' }}
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "${{ github.workspace }}/release.keystore"
+
+      - name: Build signed APK
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ github.workspace }}/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: gradle assembleRelease --stacktrace
+
+      # The decoded keystore must not outlive the step that needs it — delete it
+      # immediately so no later step (including third-party actions below) can
+      # read it off disk. Runs even if the build step failed.
+      - name: Remove decoded keystore
+        if: always()
+        run: rm -f "${{ github.workspace }}/release.keystore"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fusion-health-diagnostic-apk
+          path: app/build/outputs/apk/release/app-release.apk
+          retention-days: 30
+
+      # Attaches the raw APK as a release asset — direct-download install path,
+      # no zip extraction needed on the phone. Only runs on pushes to the WP1
+      # branch. NOTE: this repo is currently public (a deliberate, temporary
+      # choice for build purposes — see docs/plan.md), so this release is
+      # publicly visible too, not private, regardless of "prerelease" status.
+      # It will only be genuinely private once the repository itself is
+      # flipped to private ahead of production use.
+      - name: Publish prerelease
+        if: ${{ github.event_name == 'push' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: wp1-diagnostic-${{ github.run_number }}
+          name: WP1 diagnostic build ${{ github.run_number }}
+          prerelease: true
+          files: app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

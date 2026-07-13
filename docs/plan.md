@@ -1,6 +1,6 @@
 # Fusion Health — Build and Delivery Flow
 
-Status: WP0 passed for PR1 scope (see README). PR1 implementation not yet authorised.
+Status: WP0 passed for PR1 scope (see README). **PR1 complete** — cloud build, permanent release signing, and in-place update all proven on Warwick's device. PR2/PR3 not yet authorised.
 
 ## Core delivery principle
 
@@ -9,7 +9,7 @@ Fusion Health is developed without requiring Warwick to install Android Studio, 
 ```text
 Larry writes and reviews source code
             ↓
-Private GitHub repository
+GitHub repository
             ↓
 GitHub Actions cloud build
             ↓
@@ -26,7 +26,9 @@ Warwick's work laptop is not part of the Android development or testing environm
 
 ---
 
-## IDEA-005 — Personal Health Data Integration and Intelligence
+## BUILD-005 — Personal Health Data Integration and Intelligence
+
+**Governance note:** this idea converged in Foundry as `IDEA-005` and entered production as `BUILD-005`, tracked in ClickUp under **Fusion 247 MyPKA** (production delivery), not Fusion 247 Foundry (exploration/convergence). Foundry retains only a concise handoff record for this idea. PR1's branch (`idea-005/wp1/android-cloud-build`) is kept as-is — a historical exception, since the PR was already open and fully tested before this naming convention took effect. Future branches use `build-005/wpX/...`.
 
 ### Desired outcome
 
@@ -50,8 +52,8 @@ The work proceeds through small evidence-led work packages. Only the currently a
 - Gradle 8.14.3 confirmed available; AGP 8.5–8.7 range compatible.
 - Samsung Health Data SDK download/docs: `developer.samsung.com` blocked at the research environment's egress proxy — unresolved, only blocks PR3.
 - SDK licence/redistribution terms: unverified, same blocker.
-- Signing key: one debug/test keystore generated once, stored as an encrypted GitHub Actions secret, reused across builds so updates install in place. Losing this keystore breaks in-place updates for all future builds — needs durable backup once generated.
-- Delivery mechanism: GitHub private prerelease with the raw `.apk` as a release asset (preferred over a bare Actions artifact — avoids zip-extraction friction on Android).
+- Signing key: **configured and proven.** One release keystore generated, stored as encrypted GitHub Actions secrets (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`), reused across builds so updates install in place — confirmed by Build A → Build B (see PR1 status below). **Durable backup remains Warwick's ongoing operational responsibility:** losing this keystore breaks in-place updates for all future builds permanently.
+- Delivery mechanism: GitHub prerelease with the raw `.apk` as a release asset (preferred over a bare Actions artifact — avoids zip-extraction friction on Android). **Note:** this is only actually private while the repository itself is private — the repo is currently public for build purposes, so releases are public too regardless of "prerelease" labelling.
 - Diagnostic return path: on-screen copy/export, no backend, no laptop connection needed.
 
 Full preflight and correction-memo trail: `Deliverables/2026-07-13-health-data-pipeline-source-feasibility.md` in `warwickallan/fusion247pka` (held uncommitted there).
@@ -74,13 +76,19 @@ Read-only, local-only, no Fusion backend, no network upload, no database, no bac
 
 Branch: `idea-005/wp1/android-cloud-build`
 
-Scope: private repo (this one), minimal Kotlin Android app, Gradle wrapper + reproducible build config, GitHub Actions workflow, signed APK compiled on a GitHub-hosted runner, published as a private downloadable build artefact/prerelease, simple version/diagnostic-status screen. No health permissions or health-data access yet.
+Scope: this repo (currently public for build purposes, to be flipped to private before production), minimal Kotlin Android app, Gradle wrapper + reproducible build config, GitHub Actions workflow, signed APK compiled on a GitHub-hosted runner, published as a downloadable build artefact/prerelease, simple version/diagnostic-status screen. No health permissions or health-data access yet.
 
-Acceptance: Actions completes successfully; automated tests/lint pass; signed APK produced; Warwick downloads and installs directly to Galaxy phone; no `.exe`/dev tool installed on the work machine; a later build updates the installed app using the same signing identity.
+**Status: COMPLETE.** Cloud build pipeline proven end-to-end — Actions run succeeded (SDK setup, Gradle provisioning, lint, unit tests, signed APK build, artifact upload, prerelease publish), and Warwick confirmed the resulting APK installs and launches cleanly on his Galaxy phone with no health permissions requested.
+
+**Release signing — configured and proven:**
+- **Build A** (`0.2.0-wp1-build-a`, versionCode 2): first release-signed build. Release: [wp1-diagnostic-8](https://github.com/warwickallan/fusion-health/releases/tag/wp1-diagnostic-8). Warwick uninstalled the earlier debug-signed app, installed Build A fresh, and confirmed the version displayed correctly.
+- **Build B** (`0.3.0-wp1-build-b`, versionCode 3): second release-signed build, same signing identity. Release: [wp1-diagnostic-11](https://github.com/warwickallan/fusion-health/releases/tag/wp1-diagnostic-11). Warwick installed it **directly over Build A without uninstalling** — the in-place update succeeded, confirmed by the app reporting `0.3.0-wp1-build-b (3)` afterward.
+
+Acceptance — all met: Actions completes successfully; automated tests/lint pass; signed APK produced; Warwick downloads and installs directly to Galaxy phone; no `.exe`/dev tool installed on the work machine; a later build updates the installed app using the same signing identity (proven by Build A → Build B).
 
 ### PR2 — Health Connect baseline
 
-Branch: `idea-005/wp1/health-connect-baseline`
+Branch: `build-005/wp1/health-connect-baseline`
 
 Scope: detect Health Connect availability; request only required read permissions; read a small sample of sleep, steps, heart rate, nutrition; identify source-application metadata where available; display record type/timestamp/value/unit/source/significant fields; copy/export diagnostic output; no retention beyond the diagnostic session.
 
@@ -92,7 +100,7 @@ Acceptance: a genuine Health Connect record appears; record provenance visible w
 
 ### PR3 — Samsung Health Data SDK comparison
 
-Branch: `idea-005/wp1/samsung-health-comparison`
+Branch: `build-005/wp1/samsung-health-comparison`
 
 Scope: integrate the Samsung Health Data SDK; connect to Samsung Health in developer mode; request read-only permission; compare overlapping data through both routes (sleep, steps/activity, heart rate); inspect Samsung-specific availability (Energy Score, activity summary, sleep-apnoea records, irregular heart-rhythm notifications); classify each as populated / supported-but-empty / unsupported / unavailable-on-device / permission-denied; extend the export report with a route-by-route comparison.
 

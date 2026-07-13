@@ -1,0 +1,22 @@
+# Gradle / Android build output
+.gradle/
+build/
+app/build/
+local.properties
+.cxx/
+captures/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Signing material — never commit signing keys, passwords, or encoded secrets.
+# The release keystore is generated locally and supplied to GitHub Actions
+# as encrypted repository secrets only (see docs/plan.md).
+*.keystore
+*.jks
+keystore.properties
+*.pem
+*.p12
+release.keystore
