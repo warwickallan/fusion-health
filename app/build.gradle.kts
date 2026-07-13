@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.fusionhealth.diagnostic"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.fusionhealth.diagnostic"
