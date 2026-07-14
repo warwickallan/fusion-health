@@ -135,6 +135,8 @@ Do not dynamically ingest whichever version appears "richer." Authority should b
 
 ## WP2 — Source authority and canonical contract
 
+**Status: first design draft in review.** Full implementation-grade design (all nine required sections: domains, authority rules, identity/provenance, deduplication, historical depth/sync, canonical schema, privacy/retention boundary, decision/uncertainty register, implementation sequence) lives in `docs/wp2-source-authority-and-canonical-contract.md` on branch `build-005/wp2/source-authority-canonical-contract` — read that document rather than duplicating it here. Documentation-only; no application code, Samsung SDK dependency, network access, or health-data storage introduced.
+
 ### PR4 — Architecture decision and canonical health contract
 
 Document: selected Android route; authority per metric; prohibited duplicate paths; units and timestamp conventions; provenance; corrections and deletions; minimal privacy and retention rules.
