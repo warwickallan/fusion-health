@@ -82,7 +82,12 @@ class SamsungSweepPermissionsTest {
 
     @Test
     fun `swept read permissions exactly match the manifest declarations`() {
-        assertEquals(expectedManifestReadPermissions, sweptTypeReadPermissions)
+        val missingFromManifest = sweptTypeReadPermissions - expectedManifestReadPermissions
+        val extraInManifest = expectedManifestReadPermissions - sweptTypeReadPermissions
+        val diagnostic =
+            "permissions the SDK requires but the manifest list omits: $missingFromManifest; " +
+                "permissions in the manifest list the SDK does not produce: $extraInManifest"
+        assertEquals(diagnostic, expectedManifestReadPermissions, sweptTypeReadPermissions)
     }
 
     @Test
