@@ -14,7 +14,6 @@ import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
-import androidx.health.connect.client.records.CyclingPedalingCadenceRecord
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ElevationGainedRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
@@ -63,7 +62,10 @@ class SamsungSweepActivity : AppCompatActivity() {
         ExerciseSessionRecord::class,
         ElevationGainedRecord::class,
         SpeedRecord::class,
-        CyclingPedalingCadenceRecord::class,
+        // CyclingPedalingCadenceRecord is intentionally omitted: connect-client 1.1.0's
+        // HealthPermission.getReadPermission does not expose a distinct READ permission string for
+        // it (it collapses onto another permission), so it cannot be requested/declared cleanly.
+        // Treated as SDK_UNAVAILABLE for this sweep rather than blocking the build.
         PowerRecord::class,
         SleepSessionRecord::class,
         HeartRateRecord::class,
@@ -165,7 +167,6 @@ class SamsungSweepActivity : AppCompatActivity() {
                         "latest_elevation_m=${fmt1(s.maxByOrNull { it.startTime }!!.elevation.inMeters)}"
                     },
                     sweep<SpeedRecord>("Speed", granted, { it.startTime }) { null },
-                    sweep<CyclingPedalingCadenceRecord>("Cycling cadence", granted, { it.startTime }) { null },
                     sweep<PowerRecord>("Power", granted, { it.startTime }) { null },
                     // ---- Sleep ----
                     sweep<SleepSessionRecord>("Sleep sessions", granted, { it.startTime }) { s ->

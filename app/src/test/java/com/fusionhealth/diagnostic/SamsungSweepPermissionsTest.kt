@@ -5,7 +5,6 @@ import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.BodyTemperatureRecord
-import androidx.health.connect.client.records.CyclingPedalingCadenceRecord
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ElevationGainedRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
@@ -45,7 +44,6 @@ class SamsungSweepPermissionsTest {
         "android.permission.health.READ_EXERCISE",
         "android.permission.health.READ_ELEVATION_GAINED",
         "android.permission.health.READ_SPEED",
-        "android.permission.health.READ_CYCLING_PEDALING_CADENCE",
         "android.permission.health.READ_POWER",
         "android.permission.health.READ_SLEEP",
         "android.permission.health.READ_HEART_RATE",
@@ -67,7 +65,6 @@ class SamsungSweepPermissionsTest {
         HealthPermission.getReadPermission(ExerciseSessionRecord::class),
         HealthPermission.getReadPermission(ElevationGainedRecord::class),
         HealthPermission.getReadPermission(SpeedRecord::class),
-        HealthPermission.getReadPermission(CyclingPedalingCadenceRecord::class),
         HealthPermission.getReadPermission(PowerRecord::class),
         HealthPermission.getReadPermission(SleepSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
