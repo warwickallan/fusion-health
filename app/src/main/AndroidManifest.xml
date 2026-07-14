@@ -51,9 +51,14 @@
         <!-- WP2/PR4b diagnostic spike: incremental-sync capability investigation. A separate,
              independently-launched activity (own app-drawer icon) so WP1/PR2's device-proven
              MainActivity flow is left untouched. Read-only, no persistence. -->
+        <!-- Distinct taskAffinity + singleTask so tapping this launcher icon always surfaces THIS
+             activity in its own task, rather than resuming whichever Fusion activity was last on
+             top (multiple launcher entries in one app otherwise collide on the default task). -->
         <activity
             android:name=".SyncSpikeActivity"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.fusionhealth.diagnostic.syncspike">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -66,7 +71,9 @@
         <activity
             android:name=".SamsungSweepActivity"
             android:label="Samsung Capability Sweep"
-            android:exported="true">
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.fusionhealth.diagnostic.samsungsweep">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
