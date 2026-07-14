@@ -35,17 +35,38 @@ and is lost on process death.
     pagination/expiry fields (`hasMore`, `changesTokenExpired`) — metadata only, never raw health
     values.
 
+## What this build can and cannot test
+
+`currentToken` in `SyncSpikeActivity` is an in-memory field only, by design (no persistent
+storage). That gives this build three distinct, non-equivalent continuity scopes:
+
+- **Same-process repeated pulls** — supported and the primary thing this spike tests: get a
+  token once, make several source-app changes, tap "Check for changes" multiple times while the
+  app stays running.
+- **Activity recreation while the process stays alive** (e.g. rotation, backgrounding without the
+  process being killed) — potentially observable, since `currentToken` is a field on the
+  Activity instance and Android may or may not recreate that instance depending on OS behaviour,
+  but not guaranteed and not something this spike deliberately exercises or asserts about.
+- **Full app/process close and reopen** — **token continuity cannot be tested with this build.**
+  Closing the app discards `currentToken`; reopening always starts a fresh
+  `getChangesToken()` call. Whether a token obtained in an earlier process remains valid is
+  therefore **unresolved and outside this spike's proven capability** — it would require either
+  persisting the token (not authorised for this spike) or a differently-scoped follow-on test.
+
 ## Methodology (for the device test)
 
 1. Install the spike build; grant the six read permissions from the "Incremental Sync Spike" icon.
 2. Tap **Get changes token**.
-3. In a source app (Samsung Health, MyFitnessPal, or manual Health Connect entry), add one new
-   record, then edit an existing record, then delete a record — as three separate, identifiable
-   steps.
-4. Tap **Check for changes** after each step and record what the app reports: upsertion count,
-   new vs. updated split, deletion count, `has_more`, `changes_token_expired`.
-5. Repeat after closing and reopening the app (fresh token) to check behaviour across a restart,
-   and after a longer gap to probe token expiry.
+3. Create one new record in a source app, return to the spike, tap **Check for changes**, and
+   record the complete metadata/count output (upsertion count, new vs. updated split, deletion
+   count, `has_more`, `changes_token_expired`).
+4. Edit an existing source record where the source app supports editing; tap **Check for
+   changes** again and record the output.
+5. Delete a source record where supported; tap **Check for changes** again and record the output.
+6. Perform at least one further pull with no intervening change, to observe empty-delta behaviour.
+7. All of the above is a same-process test. Do not claim, and do not attempt to test, restart
+   (full close/reopen) token continuity with this build — see "What this build can and cannot
+   test" above.
 
 ## Findings
 
