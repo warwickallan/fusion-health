@@ -1,7 +1,7 @@
 # WP2 / PR4b — Incremental-sync capability spike
 
-**Status:** implementation complete, pending device test. **Findings below are placeholders until
-Warwick runs the controlled device test and reports what Health Connect actually returns.**
+**Status: SPIKE OBJECTIVE ACHIEVED.** Device evidence accepted by Warwick. The MVP requirement —
+Withings scale measurement → Health Connect → Fusion Health can read the weight record — is proven.
 
 **Dependency:** this spike is a follow-on proposed by the WP2 source-authority / canonical contract
 design, which is **GitHub PR #3 — still open and unmerged**. This spike (PR #4) is **blocked by
@@ -84,17 +84,36 @@ on process death.
 12. Do **not** claim cross-process (restart) token continuity from this build.
 13. Note any unrelated background changes rather than attributing them to the controlled action.
 
-## Findings
+## Findings (accepted device evidence)
 
-**Pending device test.** No claims are made about Health Connect's actual behaviour until Warwick
-runs the controlled steps above and reports the results — avoiding WP2 FIX1's original mistake of
-asserting unverified API behaviour as fact.
+Warwick ran the controlled device test and accepted the evidence as sufficient for the MVP.
 
-## Next steps after the device test
+- The corrected APK installed successfully as an in-place update; the existing WP1 diagnostic
+  remained functional.
+- A synthetic **99.9 kg** record entered through Withings appeared in Samsung Health (i.e. it
+  reached Health Connect via the normal source path).
+- The Changes API spike **observed the new weight record**: `upsertions=1`, `first_seen_id=1`,
+  `pages_drained=1`, `changes_token_expired=false`.
+- A later pull **observed the same record ID again**: `repeat_seen_id=1` — confirming that a
+  repeat of the same record ID is surfaced through the token, as the classification relies on.
+- Subsequent pulls returned **empty deltas cleanly**.
 
-- If edits reappear under the same record ID and deletions surface distinctly: draft the "smallest
-  correct sync contract" section of the WP2 design from the actual evidence.
-- If edits produce new IDs, or deletions aren't reliably surfaced: record the gap explicitly and
-  decide (with Warwick) whether a periodic full-reconciliation fallback is required.
-- Either result would inform the *next smallest work item to propose* — not an automatic move to
-  PR4c/PR4d, which require separate explicit authorisation.
+**Proven:** Health Connect exposes a working change-token / delta mechanism, and a Withings scale
+measurement flows through Health Connect to a point where Fusion Health can read the weight record
+and observe it via the Changes API. This is the MVP requirement.
+
+### Explicitly non-blocking / out of scope for the current MVP
+
+Editing historical scale readings; source-side deletion propagation; cross-process token
+persistence; and exhaustive correction/reconciliation semantics are all out of scope and not
+required for automatic-scale ingestion.
+
+Deletion observation, recorded as required: *"Withings source deletion did not produce an observed
+Health Connect deletion during the test window; this is not required for the current
+automatic-scale ingestion use case."*
+
+## Next step
+
+The spike has served its purpose (reduce uncertainty). The next work item is a real, minimal
+feature — a **Canonical Latest Weight Preview** — tracked separately, not a continuation of this
+spike. No PR4c/PR4d sync-semantics work is authorised.
