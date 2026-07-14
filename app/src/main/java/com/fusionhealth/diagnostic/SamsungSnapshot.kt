@@ -249,7 +249,9 @@ internal fun formatSnapshot(data: SnapshotData, zone: ZoneId = ZoneId.systemDefa
     val t = data.today
     sb.appendLine("• Steps: ${t?.steps?.let { String.format(java.util.Locale.US, "%,d", it) } ?: na}")
     sb.appendLine("• Distance: ${t?.distanceMeters?.let { km(it) } ?: na}")
-    sb.appendLine("• Total calories: ${t?.caloriesKcal?.let { kcal(it) } ?: na}")
+    // TotalCaloriesBurnedRecord is energy EXPENDED (resting metabolic rate + activity), not food
+    // eaten -- labelled "burned" so it can't be misread as calorie intake.
+    sb.appendLine("• Calories burned: ${t?.caloriesKcal?.let { kcal(it) } ?: na}")
     sb.appendLine()
 
     sb.appendLine("LATEST EXERCISE")
@@ -264,7 +266,7 @@ internal fun formatSnapshot(data: SnapshotData, zone: ZoneId = ZoneId.systemDefa
             "${mps(e.avgSpeedMps)} avg (max ${mps(e.maxSpeedMps)})"
         } else na
         sb.appendLine("• Speed: $speed")
-        sb.appendLine("• Calories: ${e.caloriesKcal?.let { kcal(it) } ?: na}")
+        sb.appendLine("• Calories burned: ${e.caloriesKcal?.let { kcal(it) } ?: na}")
     }
     sb.appendLine()
 

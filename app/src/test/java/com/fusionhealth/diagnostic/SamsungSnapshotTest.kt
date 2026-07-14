@@ -150,7 +150,7 @@ class SamsungSnapshotTest {
 
         assertTrue(text.contains("Steps: 7,572"))
         assertTrue(text.contains("Distance: 0.94 km"))
-        assertTrue(text.contains("Total calories: 94 kcal"))
+        assertTrue(text.contains("Calories burned: 94 kcal"))
         assertTrue(text.contains("Walking"))
         assertTrue(text.contains("1.3 m/s avg (max 2.1 m/s)"))
         assertTrue(text.contains("Deep: 40m"))
