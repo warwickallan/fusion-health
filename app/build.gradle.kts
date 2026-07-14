@@ -11,8 +11,8 @@ android {
         applicationId = "com.fusionhealth.diagnostic"
         minSdk = 26
         targetSdk = 34
-        versionCode = 10
-        versionName = "0.10.0-wp2-pr4b-sync-spike-fix1"
+        versionCode = 14
+        versionName = "0.14.0-samsung-health-snapshot"
     }
 
     // Release signing is optional at this stage: if ANDROID_KEYSTORE_PATH points to a
@@ -57,6 +57,16 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    testOptions {
+        unitTests.all {
+            it.testLogging {
+                events("passed", "skipped", "failed")
+                showStandardStreams = true
+                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            }
+        }
     }
 }
 

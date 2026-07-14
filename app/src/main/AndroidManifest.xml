@@ -11,6 +11,14 @@
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
 
+    <!-- Additional read permissions for the Samsung Health Snapshot (WP2). Read-only, Samsung-
+         filtered. No WRITE_* permission anywhere. -->
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+    <uses-permission android:name="android.permission.health.READ_SPEED" />
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
+
     <!-- Package-visibility declaration required to query the Health Connect provider app. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
@@ -36,6 +44,21 @@
         <activity
             android:name=".SyncSpikeActivity"
             android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- WP2 Samsung Health Snapshot: first user-facing summary of Samsung-originated data via
+             Health Connect. Own launcher name + distinct task so its icon always opens this screen
+             (not whichever Fusion activity was last on top). MainActivity is left untouched. -->
+        <activity
+            android:name=".SamsungSnapshotActivity"
+            android:label="Samsung Health Snapshot"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="com.fusionhealth.diagnostic.samsungsnapshot">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
