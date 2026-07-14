@@ -42,6 +42,18 @@
             </intent-filter>
         </activity>
 
+        <!-- Canonical Latest Weight Preview: the first real Fusion feature. A separate,
+             independently-launched activity (own app-drawer icon) so WP1/PR2's device-proven
+             MainActivity flow is left untouched. Read-only, in-memory only. -->
+        <activity
+            android:name=".CanonicalWeightActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <!-- Dedicated permissions-rationale / privacy activity. Health Connect requires an app
              to declare a rationale surface to be discoverable in its permissions UI; PR2's
              original build only had the pre-Android-14 intent-filter on MainActivity, which
