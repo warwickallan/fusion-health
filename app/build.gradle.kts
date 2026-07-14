@@ -11,8 +11,8 @@ android {
         applicationId = "com.fusionhealth.diagnostic"
         minSdk = 26
         targetSdk = 34
-        versionCode = 10
-        versionName = "0.10.0-wp2-pr4b-sync-spike-fix1"
+        versionCode = 12
+        versionName = "0.12.0-samsung-capability-sweep"
     }
 
     // Release signing is optional at this stage: if ANDROID_KEYSTORE_PATH points to a

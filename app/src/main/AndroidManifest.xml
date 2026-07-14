@@ -11,6 +11,25 @@
     <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
 
+    <!-- Additional read permissions for the Samsung Health Capability Sweep (WP2). Read-only,
+         Samsung-filtered at read time. Still no WRITE_* permission anywhere. -->
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+    <uses-permission android:name="android.permission.health.READ_FLOORS_CLIMBED" />
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+    <uses-permission android:name="android.permission.health.READ_ELEVATION_GAINED" />
+    <uses-permission android:name="android.permission.health.READ_SPEED" />
+    <uses-permission android:name="android.permission.health.READ_CYCLING_PEDALING_CADENCE" />
+    <uses-permission android:name="android.permission.health.READ_POWER" />
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
+    <uses-permission android:name="android.permission.health.READ_BLOOD_PRESSURE" />
+    <uses-permission android:name="android.permission.health.READ_BLOOD_GLUCOSE" />
+    <uses-permission android:name="android.permission.health.READ_BODY_TEMPERATURE" />
+
     <!-- Package-visibility declaration required to query the Health Connect provider app. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
@@ -35,6 +54,19 @@
              MainActivity flow is left untouched. Read-only, no persistence. -->
         <activity
             android:name=".SyncSpikeActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- WP2 Samsung Health Capability Sweep: read-only inventory of Samsung-originated data
+             available through Health Connect. Separate, independently-launched activity (distinct
+             app-drawer name) so MainActivity and SyncSpikeActivity are left untouched. -->
+        <activity
+            android:name=".SamsungSweepActivity"
+            android:label="Samsung Capability Sweep"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
