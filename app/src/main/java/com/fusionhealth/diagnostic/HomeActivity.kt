@@ -20,6 +20,9 @@ class HomeActivity : AppCompatActivity() {
         findViewById<Button>(R.id.openSnapshotButton).setOnClickListener {
             startActivity(Intent(this, SamsungSnapshotActivity::class.java))
         }
+        findViewById<Button>(R.id.openBodyLogButton).setOnClickListener {
+            startActivity(Intent(this, BodyLogActivity::class.java))
+        }
         findViewById<Button>(R.id.openDiagnosticButton).setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }

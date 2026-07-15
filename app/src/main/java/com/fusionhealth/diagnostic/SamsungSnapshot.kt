@@ -230,6 +230,9 @@ internal data class SnapshotData(
     val heartOxygen: HeartOxygenSummary?,
     val latestSourceTimestamp: Instant?,
     val generatedAt: Instant,
+    val bodyComposition: BodyCompositionData? = null,
+    val nutrition: NutritionData? = null,
+    val bodyLog: BodyLogDisplay? = null,
 )
 
 /**
@@ -242,7 +245,7 @@ internal fun formatSnapshot(data: SnapshotData, zone: ZoneId = ZoneId.systemDefa
     val na = "Not available"
     val sb = StringBuilder()
 
-    sb.appendLine("SAMSUNG HEALTH SNAPSHOT")
+    sb.appendLine("FUSION247 HEALTH SNAPSHOT")
     sb.appendLine()
 
     sb.appendLine("TODAY")
@@ -302,11 +305,22 @@ internal fun formatSnapshot(data: SnapshotData, zone: ZoneId = ZoneId.systemDefa
     }
     sb.appendLine()
 
-    sb.appendLine("DETAILS")
-    sb.appendLine("• Source: Samsung Health via Health Connect ($SAMSUNG_SNAPSHOT_PACKAGE)")
+    val stamp: (Instant) -> String = { dateTime.format(it) }
+    sb.append(formatBodyComposition(data.bodyComposition, stamp))
+    sb.appendLine()
+    sb.append(formatNutrition(data.nutrition, stamp))
+    sb.appendLine()
+    sb.append(formatBodyLog(data.bodyLog, stamp))
+    sb.appendLine()
+
+    sb.appendLine("SOURCE & REFRESH DETAILS")
+    sb.appendLine("• Samsung Health via Health Connect ($SAMSUNG_SNAPSHOT_PACKAGE)")
+    sb.appendLine("• Withings via Health Connect ($WITHINGS_PACKAGE)")
+    sb.appendLine("• MyFitnessPal via Health Connect ($MFP_PACKAGE)")
+    sb.appendLine("• Chest/waist: Fusion manual log (stored only on this phone)")
     sb.appendLine("• Latest source data: ${data.latestSourceTimestamp?.let { dateTime.format(it) } ?: na}")
     sb.appendLine("• Refreshed: ${dateTime.format(data.generatedAt)}")
-    sb.appendLine("Read-only; nothing is stored or uploaded.")
+    sb.appendLine("External health data is read-only; nothing is uploaded.")
     return sb.toString()
 }
 

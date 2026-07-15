@@ -161,6 +161,59 @@ class SamsungSnapshotTest {
     }
 
     @Test
+    fun `unified summary contains all eight sections in order with source packages`() {
+        val data = SnapshotData(
+            today = null,
+            exercise = null,
+            sleep = null,
+            heartOxygen = null,
+            latestSourceTimestamp = null,
+            generatedAt = Instant.parse("2026-07-15T08:00:00Z"),
+            bodyComposition = BodyCompositionData(
+                metrics = listOf(
+                    classifyBodyMetric("Weight", "kg", true, listOf(MetricReading(80.0, Instant.parse("2026-07-15T07:00:00Z")))),
+                ),
+                fatMassKg = 20.0,
+                bmi = 24.7,
+            ),
+            nutrition = NutritionData(
+                status = SourceReadStatus.POPULATED,
+                todayTotals = MacroTotals(1800.0, 120.0, 150.0, 60.0, 25.0, 40.0),
+                yesterdayTotals = null,
+                todayMeals = emptyList(),
+                todayOtherNutrients = listOf(NutrientAmount("Sodium", 2.1)),
+                latestRecordTime = Instant.parse("2026-07-15T07:30:00Z"),
+            ),
+            bodyLog = buildBodyLogDisplay(
+                listOf(
+                    BodyMeasurement("c1", BodyMetricType.CHEST, 104.0, Instant.parse("2026-07-15T07:45:00Z"), Instant.parse("2026-07-15T07:45:00Z")),
+                )
+            ),
+        )
+
+        val text = formatSnapshot(data, zone = ZoneId.of("UTC"))
+
+        val sections = listOf(
+            "TODAY", "LATEST EXERCISE", "LAST SLEEP", "HEART & OXYGEN",
+            "BODY COMPOSITION — Withings", "NUTRITION — MyFitnessPal",
+            "BODY MEASUREMENTS — Fusion", "SOURCE & REFRESH DETAILS",
+        )
+        var lastIndex = -1
+        for (section in sections) {
+            val idx = text.indexOf(section)
+            assertTrue("missing section: $section", idx >= 0)
+            assertTrue("section out of order: $section", idx > lastIndex)
+            lastIndex = idx
+        }
+        assertTrue(text.contains("Fat mass: 20.0 kg (Calculated"))
+        assertTrue(text.contains("Today: 1800 kcal"))
+        assertTrue(text.contains("Sodium: 2.1 g"))
+        assertTrue(text.contains("Chest: 104.0 cm"))
+        assertTrue(text.contains("com.withings.wiscale2"))
+        assertTrue(text.contains("com.myfitnesspal.android"))
+    }
+
+    @Test
     fun `formatting shows Not available sections when data is missing`() {
         val data = SnapshotData(
             today = null,

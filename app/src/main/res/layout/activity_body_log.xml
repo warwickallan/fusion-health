@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Log Body Measurements"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Chest and waist in centimetres. Stored only on this phone; never uploaded or written to Health Connect."
+            android:textSize="13sp"
+            android:paddingBottom="16dp" />
+
+        <EditText
+            android:id="@+id/chestInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Chest (cm)"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/waistInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Waist (cm)"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/measuredAtInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Measured at (yyyy-MM-dd HH:mm)"
+            android:inputType="datetime" />
+
+        <Button
+            android:id="@+id/saveMeasurementsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Save" />
+
+        <TextView
+            android:id="@+id/bodyLogStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="12dp"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="History"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:id="@+id/historyContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </LinearLayout>
+
+</ScrollView>
