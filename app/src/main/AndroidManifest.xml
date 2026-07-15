@@ -19,6 +19,14 @@
     <uses-permission android:name="android.permission.health.READ_SPEED" />
     <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
 
+    <!-- Withings body-composition read permissions for the unified snapshot. Still read-only:
+         no WRITE_* permission anywhere in this manifest. -->
+    <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BODY_WATER_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
+    <uses-permission android:name="android.permission.health.READ_HEIGHT" />
+
     <!-- Package-visibility declaration required to query the Health Connect provider app. -->
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
@@ -53,10 +61,16 @@
             android:name=".SyncSpikeActivity"
             android:exported="true" />
 
-        <!-- WP2 Samsung Health Snapshot: first user-facing summary. Launched from HomeActivity. -->
+        <!-- Fusion247 Health Snapshot (unified): Samsung + Withings + MyFitnessPal + manual body
+             log in one readable page. Launched from HomeActivity. -->
         <activity
             android:name=".SamsungSnapshotActivity"
             android:exported="true" />
+
+        <!-- LOG BODY MEASUREMENTS: Fusion-owned manual chest/waist entry. App-internal only. -->
+        <activity
+            android:name=".BodyLogActivity"
+            android:exported="false" />
 
         <!-- Dedicated permissions-rationale / privacy activity. Health Connect requires an app
              to declare a rationale surface to be discoverable in its permissions UI; PR2's

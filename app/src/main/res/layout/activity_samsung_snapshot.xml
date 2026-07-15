@@ -26,6 +26,14 @@
             android:text="Copy Summary" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/logBodyButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="12dp"
+        android:text="LOG BODY MEASUREMENTS" />
+
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">

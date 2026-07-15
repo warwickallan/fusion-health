@@ -1,26 +1,36 @@
 package com.fusionhealth.diagnostic
 
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.BasalMetabolicRateRecord
+import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.BodyWaterMassRecord
+import androidx.health.connect.client.records.BoneMassRecord
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.HeightRecord
+import androidx.health.connect.client.records.LeanBodyMassRecord
+import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.SpeedRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.WeightRecord
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
 
 /**
- * Guards the Snapshot's read-permission set (derived from its record classes via the real SDK)
- * against the literal permission strings declared in AndroidManifest.xml, so a wrong or missing
- * manifest permission fails at CI rather than silently returning PERMISSION_DENIED on-device.
+ * Guards the unified snapshot's read-permission set (derived from its record classes via the real
+ * SDK) against the literal permission strings declared in AndroidManifest.xml, so a wrong or
+ * missing manifest permission fails at CI rather than silently returning PERMISSION_DENIED
+ * on-device.
  */
 class SamsungSnapshotPermissionsTest {
 
     private val expectedManifestReadPermissions = setOf(
+        // Samsung sections
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_DISTANCE",
         "android.permission.health.READ_TOTAL_CALORIES_BURNED",
@@ -29,6 +39,16 @@ class SamsungSnapshotPermissionsTest {
         "android.permission.health.READ_SLEEP",
         "android.permission.health.READ_HEART_RATE",
         "android.permission.health.READ_OXYGEN_SATURATION",
+        // Withings body composition
+        "android.permission.health.READ_WEIGHT",
+        "android.permission.health.READ_BODY_FAT",
+        "android.permission.health.READ_LEAN_BODY_MASS",
+        "android.permission.health.READ_BODY_WATER_MASS",
+        "android.permission.health.READ_BONE_MASS",
+        "android.permission.health.READ_BASAL_METABOLIC_RATE",
+        "android.permission.health.READ_HEIGHT",
+        // MyFitnessPal nutrition
+        "android.permission.health.READ_NUTRITION",
     )
 
     private val snapshotReadPermissions = setOf(
@@ -40,6 +60,14 @@ class SamsungSnapshotPermissionsTest {
         HealthPermission.getReadPermission(SleepSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
         HealthPermission.getReadPermission(OxygenSaturationRecord::class),
+        HealthPermission.getReadPermission(WeightRecord::class),
+        HealthPermission.getReadPermission(BodyFatRecord::class),
+        HealthPermission.getReadPermission(LeanBodyMassRecord::class),
+        HealthPermission.getReadPermission(BodyWaterMassRecord::class),
+        HealthPermission.getReadPermission(BoneMassRecord::class),
+        HealthPermission.getReadPermission(BasalMetabolicRateRecord::class),
+        HealthPermission.getReadPermission(HeightRecord::class),
+        HealthPermission.getReadPermission(NutritionRecord::class),
     )
 
     @Test

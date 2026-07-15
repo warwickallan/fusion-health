@@ -11,8 +11,8 @@ android {
         applicationId = "com.fusionhealth.diagnostic"
         minSdk = 26
         targetSdk = 34
-        versionCode = 15
-        versionName = "0.15.0-samsung-health-snapshot-home"
+        versionCode = 16
+        versionName = "0.16.0-unified-snapshot-body-log"
     }
 
     // Release signing is optional at this stage: if ANDROID_KEYSTORE_PATH points to a
