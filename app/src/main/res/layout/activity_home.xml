@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fusion247 Health"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:paddingBottom="4dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Read-only tools for the health data on this device. Nothing is stored or uploaded."
+            android:textSize="14sp"
+            android:paddingBottom="24dp" />
+
+        <Button
+            android:id="@+id/openSnapshotButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Samsung Health Snapshot" />
+
+        <Button
+            android:id="@+id/openDiagnosticButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Health Connect Diagnostic" />
+
+        <Button
+            android:id="@+id/openSyncSpikeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Incremental Sync Spike" />
+
+    </LinearLayout>
+
+</ScrollView>
