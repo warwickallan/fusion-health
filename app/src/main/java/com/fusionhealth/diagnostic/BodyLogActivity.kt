@@ -44,11 +44,6 @@ class BodyLogActivity : AppCompatActivity() {
         val waistText = findViewById<EditText>(R.id.waistInput).text.toString().trim()
         val whenText = findViewById<EditText>(R.id.measuredAtInput).text.toString().trim()
 
-        if (chestText.isEmpty() && waistText.isEmpty()) {
-            setStatus("Enter a chest and/or waist value in cm before saving.")
-            return
-        }
-
         val measuredAt = try {
             LocalDateTime.parse(whenText, dateTimeFormat).atZone(ZoneId.systemDefault()).toInstant()
         } catch (e: Exception) {
@@ -56,30 +51,22 @@ class BodyLogActivity : AppCompatActivity() {
             return
         }
 
-        val saved = mutableListOf<String>()
-        for ((text, type) in listOf(chestText to BodyMetricType.CHEST, waistText to BodyMetricType.WAIST)) {
-            if (text.isEmpty()) continue
-            val value = text.toDoubleOrNull()
-            if (value == null || !isPlausibleCircumferenceCm(value)) {
-                setStatus("${type.name.lowercase().replaceFirstChar { it.uppercase() }} must be a sensible number of centimetres.")
+        // All-or-nothing: validate every supplied field before writing anything, so a valid chest
+        // with an invalid waist persists nothing (correcting the waist can't leave a duplicate).
+        val createdAt = Instant.now()
+        when (val pending = buildPendingMeasurements(chestText, waistText, measuredAt, createdAt) { UUID.randomUUID().toString() }) {
+            is PendingMeasurements.Invalid -> {
+                setStatus(pending.message)
                 return
             }
-            store.add(
-                BodyMeasurement(
-                    id = UUID.randomUUID().toString(),
-                    type = type,
-                    valueCm = value,
-                    measuredAt = measuredAt,
-                    createdAt = Instant.now(),
-                )
-            )
-            saved += type.name.lowercase()
+            is PendingMeasurements.Valid -> {
+                store.addAll(pending.measurements)
+                findViewById<EditText>(R.id.chestInput).setText("")
+                findViewById<EditText>(R.id.waistInput).setText("")
+                setStatus("Saved ${pending.measurements.joinToString(" and ") { it.type.name.lowercase() }}.")
+                renderHistory()
+            }
         }
-
-        findViewById<EditText>(R.id.chestInput).setText("")
-        findViewById<EditText>(R.id.waistInput).setText("")
-        setStatus("Saved ${saved.joinToString(" and ")}.")
-        renderHistory()
     }
 
     private fun renderHistory() {

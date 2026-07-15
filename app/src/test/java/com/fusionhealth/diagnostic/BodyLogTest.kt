@@ -81,6 +81,46 @@ class BodyLogTest {
     }
 
     @Test
+    fun `a valid chest with an invalid waist persists nothing and cannot duplicate on resubmit`() {
+        val file = File.createTempFile("body-log-allornothing", ".txt")
+        file.deleteOnExit()
+        file.delete()
+        val store = BodyLogStore(file)
+        val at = Instant.parse("2026-07-15T08:30:00Z")
+        var counter = 0
+        val idFor: (BodyMetricType) -> String = { "${it.name}-${counter++}" }
+
+        // First submit: chest valid, waist nonsense -> Invalid -> write nothing.
+        val first = buildPendingMeasurements("114", "abc", at, at, idFor)
+        assertTrue(first is PendingMeasurements.Invalid)
+        if (first is PendingMeasurements.Valid) store.addAll(first.measurements)
+        assertTrue(store.loadAll().isEmpty())
+
+        // Corrected resubmit: both valid -> exactly two records, no duplicate chest.
+        val second = buildPendingMeasurements("114", "87", at, at, idFor)
+        assertTrue(second is PendingMeasurements.Valid)
+        store.addAll((second as PendingMeasurements.Valid).measurements)
+
+        val all = store.loadAll()
+        assertEquals(2, all.size)
+        assertEquals(1, all.count { it.type == BodyMetricType.CHEST })
+        assertEquals(1, all.count { it.type == BodyMetricType.WAIST })
+    }
+
+    @Test
+    fun `builder allows saving one field alone and rejects an empty submit`() {
+        val at = Instant.parse("2026-07-15T08:30:00Z")
+        val idFor: (BodyMetricType) -> String = { it.name }
+
+        val chestOnly = buildPendingMeasurements("104", "", at, at, idFor)
+        assertTrue(chestOnly is PendingMeasurements.Valid)
+        assertEquals(listOf(BodyMetricType.CHEST), (chestOnly as PendingMeasurements.Valid).measurements.map { it.type })
+
+        val nothing = buildPendingMeasurements("", "  ", at, at, idFor)
+        assertTrue(nothing is PendingMeasurements.Invalid)
+    }
+
+    @Test
     fun `store persists across instances and supports deletion`() {
         val file = File.createTempFile("body-log-test", ".txt")
         file.deleteOnExit()

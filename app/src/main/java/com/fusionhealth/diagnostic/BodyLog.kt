@@ -48,6 +48,44 @@ internal fun parseMeasurementLine(line: String): BodyMeasurement? {
 /** Sensible bounds for a circumference in cm — validation only, no fitness judgement. */
 internal fun isPlausibleCircumferenceCm(value: Double): Boolean = value > 10.0 && value < 400.0
 
+private fun metricName(type: BodyMetricType): String =
+    type.name.lowercase().replaceFirstChar { it.uppercase() }
+
+/** Outcome of validating a save: either the complete set to persist, or a message and nothing. */
+internal sealed class PendingMeasurements {
+    data class Valid(val measurements: List<BodyMeasurement>) : PendingMeasurements()
+    data class Invalid(val message: String) : PendingMeasurements()
+}
+
+/**
+ * Builds the complete set of measurements to persist from the raw chest/waist inputs, ALL-OR-
+ * NOTHING: every supplied field is parsed and validated before anything is produced, so a valid
+ * chest with an invalid waist yields [PendingMeasurements.Invalid] and writes nothing (avoiding a
+ * duplicate chest on a corrected resubmit). Either field may be supplied alone or both together.
+ */
+internal fun buildPendingMeasurements(
+    chestText: String,
+    waistText: String,
+    measuredAt: Instant,
+    createdAt: Instant,
+    idFor: (BodyMetricType) -> String,
+): PendingMeasurements {
+    val fields = listOf(chestText.trim() to BodyMetricType.CHEST, waistText.trim() to BodyMetricType.WAIST)
+    if (fields.all { it.first.isEmpty() }) {
+        return PendingMeasurements.Invalid("Enter a chest and/or waist value in cm before saving.")
+    }
+    val pending = mutableListOf<BodyMeasurement>()
+    for ((text, type) in fields) {
+        if (text.isEmpty()) continue
+        val value = text.toDoubleOrNull()
+        if (value == null || !isPlausibleCircumferenceCm(value)) {
+            return PendingMeasurements.Invalid("${metricName(type)} must be a sensible number of centimetres.")
+        }
+        pending += BodyMeasurement(idFor(type), type, value, measuredAt, createdAt)
+    }
+    return PendingMeasurements.Valid(pending)
+}
+
 /** Latest and previous measurement of one type, by measured time (newest first). */
 internal fun latestAndPrevious(
     all: List<BodyMeasurement>,
@@ -142,6 +180,12 @@ internal class BodyLogStore(private val file: File) {
 
     fun add(measurement: BodyMeasurement) {
         writeAll(loadAll() + measurement)
+    }
+
+    /** Appends a whole set atomically — used so a multi-field save is all-or-nothing. */
+    fun addAll(measurements: List<BodyMeasurement>) {
+        if (measurements.isEmpty()) return
+        writeAll(loadAll() + measurements)
     }
 
     fun delete(id: String) {
